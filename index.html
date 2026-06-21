@@ -30,7 +30,7 @@
        via calc(), so nothing overflows the screen. */
     .topbar {
       height: 9vh;
-      width: 100vw;
+      width: 100%;
       background: var(--navy);
       border-bottom: 0.3vh solid var(--blue);
       display: flex;
@@ -38,6 +38,7 @@
       justify-content: space-between;
       padding: 0 2vw;
       color: #fff;
+      box-sizing: border-box;
     }
     .topbar .brandblock { line-height: 1.1; }
     .topbar .brandblock .name {
@@ -52,7 +53,7 @@
     }
 
     .screen {
-      width:100vw;
+      width: 100%;
       height: calc(100vh - 9vh);
       display:grid; grid-template-columns: 72% 28%; gap:0;
     }
