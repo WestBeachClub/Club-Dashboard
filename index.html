@@ -6,293 +6,164 @@
   <title>West Beach Club Dashboard</title>
   <style>
     :root {
-      --navy:#0b2f4f;
-      --blue:#1e6f9f;
-      --sand:#f4efe4;
-      --white:#ffffff;
-      --muted:#6b7280;
-      --line:#d8e2ea;
-      --shadow:0 2px 12px rgba(11,47,79,.10);
-      --header-height:78px;
+      --navy:#0b2f4f; --blue:#1e6f9f; --sand:#f4efe4; --white:#ffffff; --muted:#6b7280; --line:#d8e2ea;
     }
     * { box-sizing: border-box; }
     html, body {
-      margin:0;
-      width:100%;
-      height:100%;
-      overflow:hidden;
-      font-family: Arial, Helvetica, sans-serif;
-      background:var(--sand);
-      color:var(--navy);
+      margin:0; padding:0; width:100%; height:100%;
+      overflow:hidden; font-family: Arial, Helvetica, sans-serif;
+      background:var(--sand); color:var(--navy);
     }
 
-    /* Full TV screen */
+    /*
+      All sizing below uses vw/vh (viewport-relative) units instead of
+      fixed px. This is what makes the whole dashboard scale perfectly
+      to fill a 43" TV edge-to-edge: vw/vh always equal 1% of the
+      actual screen width/height, on any resolution (1080p, 4K, etc),
+      so every element - fonts, padding, icons, gaps - grows or
+      shrinks together and the proportions never change.
+    */
+
+    /* Top navy header bar: club name + location on the left, live
+       date on the right. Fixed height in vh, with the main content
+       grid below sized to fill exactly the remaining viewport height
+       via calc(), so nothing overflows the screen. */
+    .topbar {
+      height: 9vh;
+      width: 100vw;
+      background: var(--navy);
+      border-bottom: 0.3vh solid var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2vw;
+      color: #fff;
+    }
+    .topbar .brandblock { line-height: 1.1; }
+    .topbar .brandblock .name {
+      font-size: 2.1vw; font-weight: 800; letter-spacing: 0.1vw;
+    }
+    .topbar .brandblock .place {
+      font-size: 1.05vw; font-weight: 600; letter-spacing: 0.2vw;
+      text-transform: uppercase; color: #cfe3f0; margin-top: 0.3vh;
+    }
+    .topbar .date {
+      font-size: 1.7vw; font-weight: 700; white-space: nowrap;
+    }
+
     .screen {
       width:100vw;
-      height:100vh;
-      display:grid;
-      grid-template-rows: var(--header-height) 1fr;
-      background:var(--sand);
+      height: calc(100vh - 9vh);
+      display:grid; grid-template-columns: 72% 28%; gap:0;
     }
-
-    /* Unified top banner */
-    .topbar {
-      height:var(--header-height);
-      background:linear-gradient(90deg,var(--navy),#124a76);
-      color:white;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:0 28px;
-      border-bottom:5px solid var(--blue);
-    }
-    .club-title {
-      display:flex;
-      flex-direction:column;
-      line-height:1.05;
-    }
-    .club-title .main {
-      font-size:30px;
-      font-weight:900;
-      letter-spacing:1.8px;
-    }
-    .club-title .sub {
-      margin-top:5px;
-      font-size:13px;
-      letter-spacing:2.5px;
-      text-transform:uppercase;
-      opacity:.9;
-    }
-    .today {
-      font-size:19px;
-      font-weight:800;
-      letter-spacing:.7px;
-      text-align:right;
-      white-space:nowrap;
-    }
-
-    /* Same height left and right beneath header */
-    .content {
-      height:calc(100vh - var(--header-height));
-      display:grid;
-      grid-template-columns: 72% 28%;
-      gap:0;
-      padding:16px;
-    }
-
-    .slides-wrap,
-    .panel {
-      height:100%;
-      min-height:0;
-      border-radius:18px;
-      overflow:hidden;
-      box-shadow:var(--shadow);
-      border:1px solid var(--line);
-      background:white;
-    }
-
-    .slides-wrap {
-      margin-right:16px;
-      background:#000;
-      display:flex;
-      align-items:stretch;
-      justify-content:stretch;
-    }
-    .slides-wrap iframe {
-      width:100%;
-      height:100%;
-      border:0;
-      display:block;
-    }
+    .slides { background:#000; height: 100%; }
+    .slides iframe { width:100%; height:100%; border:0; display:block; }
 
     .panel {
-      padding:16px;
+      height: 100%;
+      padding: 2vh 1.6vw;
       background:linear-gradient(180deg,#fff 0%,#f7fbfd 100%);
-      display:flex;
-      flex-direction:column;
-      gap:12px;
+      border-left: 0.3vw solid var(--blue);
+      display:flex; flex-direction:column; gap:1.6vh;
+      justify-content: space-between;
+      overflow:hidden;
     }
 
-    .panel-heading {
-      text-align:center;
-      border-bottom:1px solid var(--line);
-      padding-bottom:10px;
-      flex:0 0 auto;
-    }
-    .panel-heading h1 {
-      margin:0;
-      font-size:20px;
-      letter-spacing:1px;
-      text-transform:uppercase;
-    }
-    .panel-heading .sub {
-      margin-top:3px;
-      font-size:12px;
-      color:var(--muted);
-      text-transform:uppercase;
-      letter-spacing:1.7px;
-    }
+    .brand { text-align:center; border-bottom:0.1vh solid var(--line); padding-bottom:1.4vh; }
+    .brand .sub { font-size:1.2vw; color:var(--muted); text-transform:uppercase; letter-spacing:0.15vw; font-weight:700; }
 
     .card {
-      background:var(--white);
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:14px;
-      box-shadow:0 2px 8px rgba(11,47,79,.07);
-      flex:0 0 auto;
+      background:var(--white); border:0.1vh solid var(--line);
+      border-radius:1.4vw; padding:1.6vh 1.4vw;
+      box-shadow:0 0.2vh 1vh rgba(11,47,79,.08);
     }
-    .weather-card { flex:1.05 1 0; min-height:0; }
-    .tide-card { flex:.82 1 0; min-height:0; }
-    .forecast-card { flex:.72 1 0; min-height:0; }
+    .card h2 { margin:0 0 1.2vh 0; font-size:1.45vw; letter-spacing:0.04vw; text-transform:uppercase; }
 
-    .card h2 {
-      margin:0 0 10px 0;
-      font-size:17px;
-      letter-spacing:.6px;
-      text-transform:uppercase;
-    }
-    .weather-main {
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:8px;
-    }
-    .temp {
-      font-size:50px;
-      line-height:1;
-      font-weight:900;
-    }
-    .condition {
-      font-size:17px;
-      margin-top:5px;
-      color:var(--blue);
-      font-weight:800;
-    }
-    .icon { font-size:52px; }
-    .grid {
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:8px;
-      margin-top:12px;
-    }
-    .metric {
-      background:#f4f8fb;
-      border-radius:12px;
-      padding:9px;
-    }
-    .label {
-      color:var(--muted);
-      font-size:11px;
-      text-transform:uppercase;
-      letter-spacing:.8px;
-    }
-    .value {
-      font-size:18px;
-      margin-top:3px;
-      font-weight:900;
-    }
+    .weather-main { display:flex; align-items:center; justify-content:space-between; gap:0.8vw; }
+    .temp { font-size:4.6vw; line-height:1; font-weight:800; }
+    .condition { font-size:1.5vw; margin-top:0.6vh; color:var(--blue); font-weight:700; }
+    .icon { font-size:4.4vw; }
+
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:0.8vw; margin-top:1.4vh; }
+    .metric { background:#f4f8fb; border-radius:0.9vw; padding:1vh 0.8vw; }
+    .label { color:var(--muted); font-size:0.95vw; text-transform:uppercase; letter-spacing:0.05vw; }
+    .value { font-size:1.6vw; margin-top:0.3vh; font-weight:800; }
+
     .tide-row {
-      display:flex;
-      justify-content:space-between;
-      align-items:baseline;
-      border-top:1px solid var(--line);
-      padding:9px 0;
-      font-size:17px;
+      display:flex; justify-content:space-between; align-items:baseline;
+      border-top:0.1vh solid var(--line); padding:1vh 0; font-size:1.45vw;
     }
     .tide-row:first-of-type { border-top:0; padding-top:0; }
-    .tide-type { font-weight:900; }
-    .tide-time { color:var(--blue); font-weight:900; }
-    .forecast {
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:8px;
-      height:calc(100% - 30px);
+    .tide-type { font-weight:800; }
+    .tide-time { color:var(--blue); font-weight:800; }
+
+    .forecast { display:grid; grid-template-columns:repeat(3,1fr); gap:0.6vw; }
+    .day { background:#f4f8fb; border-radius:0.9vw; padding:1vh 0.4vw; text-align:center; }
+    .day-name { font-size:0.95vw; text-transform:uppercase; color:var(--muted); letter-spacing:0.04vw; }
+    .day-icon { font-size:2.2vw; margin:0.5vh 0; }
+    .day-temp { font-size:1.35vw; font-weight:800; }
+
+    .error { color:#9f1e1e; font-weight:700; font-size:1vw; line-height:1.35; }
+
+    /*
+      Fallback for unusually narrow/tall windows (e.g. a portrait
+      monitor used for testing on a laptop instead of the TV): clamp
+      font sizes so text never becomes illegibly small or grotesquely
+      huge outside the 16:9 TV context this was designed for.
+    */
+    @media (max-aspect-ratio: 4/5) {
+      .panel { padding: 2vh 2.4vw; }
+      .temp { font-size: 9vw; }
+      .icon { font-size: 8vw; }
     }
-    .day {
-      background:#f4f8fb;
-      border-radius:12px;
-      padding:8px 5px;
-      text-align:center;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-    }
-    .day-name {
-      font-size:11px;
-      text-transform:uppercase;
-      color:var(--muted);
-      letter-spacing:.7px;
-      font-weight:800;
-    }
-    .day-icon { font-size:25px; margin:4px 0; }
-    .day-temp { font-size:15px; font-weight:900; }
-    .status {
-      flex:0 0 auto;
-      font-size:10px;
-      color:var(--muted);
-      text-align:center;
-      line-height:1.35;
-      padding-top:2px;
-    }
-    .error { color:#9f1e1e; font-weight:700; font-size:13px; line-height:1.35; }
   </style>
 </head>
 <body>
+  <header class="topbar">
+    <div class="brandblock">
+      <div class="name">WEST BEACH CLUB</div>
+      <div class="place">Hyannis Port</div>
+    </div>
+    <div class="date" id="liveDate">--</div>
+  </header>
+
   <main class="screen">
-    <header class="topbar">
-      <div class="club-title">
-        <div class="main">WEST BEACH CLUB</div>
-        <div class="sub">Hyannis Port</div>
-      </div>
-      <div class="today" id="todayText">Today’s Conditions</div>
-    </header>
-
-    <section class="content">
-      <div class="slides-wrap">
-        <iframe id="slidesFrame" src="https://docs.google.com/presentation/d/e/2PACX-1vQSGyCIN9DPZhBSnBSsRwqBEY_bkyZI1ety04JSmHb7qx6tMf7fQuhv0Ayk7jofSyjOLMJQm3s3Zm_8/embed?start=true&loop=true&delayms=15000" allowfullscreen="true"></iframe>
-      </div>
-
-      <aside class="panel">
-        <div class="panel-heading">
-          <h1>Today at the Beach</h1>
-          <div class="sub">Weather • Tides • Forecast</div>
-        </div>
-
-        <section class="card weather-card" id="weatherCard">
-          <h2>Weather</h2>
-          <div class="weather-main">
-            <div>
-              <div class="temp" id="temp">--°</div>
-              <div class="condition" id="condition">Loading…</div>
-            </div>
-            <div class="icon" id="weatherIcon">☀️</div>
-          </div>
-          <div class="grid">
-            <div class="metric"><div class="label">High / Low</div><div class="value" id="hiLow">-- / --</div></div>
-            <div class="metric"><div class="label">Wind</div><div class="value" id="wind">-- mph</div></div>
-            <div class="metric"><div class="label">Rain Chance</div><div class="value" id="rain">--%</div></div>
-            <div class="metric"><div class="label">Water Temp</div><div class="value" id="waterTemp">--°</div></div>
-            <div class="metric"><div class="label">Feels Like</div><div class="value" id="feelsLike">--°</div></div>
-            <div class="metric"><div class="label">Updated</div><div class="value" id="updated">--</div></div>
-          </div>
-        </section>
-
-        <section class="card tide-card">
-          <h2>Hyannisport Tides</h2>
-          <div id="tides"><div class="condition">Loading tides…</div></div>
-        </section>
-
-        <section class="card forecast-card">
-          <h2>3-Day Forecast</h2>
-          <div class="forecast" id="forecast"></div>
-        </section>
-
-        <div class="status">
-          Weather: Open-Meteo • Tides/Water Temp: NOAA Station 8447605 Hyannisport, MA<br>
-          Weather/tides refresh every 15 minutes. Slides reload every 30 minutes. Page reloads every 4 hours.
-        </div>
-      </aside>
+    <section class="slides">
+      <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vQSGyCIN9DPZhBSnBSsRwqBEY_bkyZI1ety04JSmHb7qx6tMf7fQuhv0Ayk7jofSyjOLMJQm3s3Zm_8/embed?start=true&loop=true&delayms=10000" allowfullscreen="true"></iframe>
     </section>
+
+    <aside class="panel">
+      <div class="brand">
+        <div class="sub">Today's Conditions</div>
+      </div>
+
+      <section class="card" id="weatherCard">
+        <h2>Weather</h2>
+        <div class="weather-main">
+          <div>
+            <div class="temp" id="temp">--°</div>
+            <div class="condition" id="condition">Loading…</div>
+          </div>
+          <div class="icon" id="weatherIcon">☀️</div>
+        </div>
+        <div class="grid">
+          <div class="metric"><div class="label">High / Low</div><div class="value" id="hiLow">-- / --</div></div>
+          <div class="metric"><div class="label">Wind</div><div class="value" id="wind">-- mph</div></div>
+          <div class="metric"><div class="label">Rain Chance</div><div class="value" id="rain">--%</div></div>
+          <div class="metric"><div class="label">Water Temp</div><div class="value" id="waterTemp">--°</div></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Hyannisport Tides</h2>
+        <div id="tides"><div class="condition">Loading tides…</div></div>
+      </section>
+
+      <section class="card">
+        <h2>3-Day Forecast</h2>
+        <div class="forecast" id="forecast"></div>
+      </section>
+    </aside>
   </main>
 
 <script>
@@ -300,12 +171,12 @@ const LAT = 41.632;       // Hyannisport, MA
 const LON = -70.300;
 const TIDE_STATION = '8447605';
 const WEATHER_URL = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FNew_York&forecast_days=3`;
-const WATER_TEMP_URL = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=latest&station=${TIDE_STATION}&product=water_temperature&datum=MLLW&time_zone=lst_ldt&units=english&format=json`;
+// Marine API lives on a separate host from the main forecast API and
+// only documents &hourly= (not &current=) as a reliable parameter, so
+// we request the hourly series and read off today's first (current)
+// hour rather than relying on an unconfirmed &current= shortcut.
+const MARINE_URL = `https://marine-api.open-meteo.com/v1/marine?latitude=${LAT}&longitude=${LON}&hourly=sea_surface_temperature&temperature_unit=fahrenheit&timezone=America%2FNew_York&forecast_days=1`;
 
-function setTodayText(){
-  const now = new Date();
-  document.getElementById('todayText').textContent = now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
-}
 function iconFor(code){
   if ([0].includes(code)) return '☀️';
   if ([1,2].includes(code)) return '🌤️';
@@ -320,12 +191,10 @@ function textFor(code){
   const map = {0:'Clear',1:'Mainly Sunny',2:'Partly Cloudy',3:'Cloudy',45:'Fog',48:'Fog',51:'Light Drizzle',53:'Drizzle',55:'Heavy Drizzle',61:'Light Rain',63:'Rain',65:'Heavy Rain',80:'Rain Showers',81:'Rain Showers',82:'Heavy Showers',95:'Thunderstorms'};
   return map[code] || 'Current Conditions';
 }
-function fmtTime(iso){
-  return new Date(iso).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-}
 function dayName(dateStr){
   return new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US',{weekday:'short'});
 }
+
 async function loadWeather(){
   try {
     const r = await fetch(WEATHER_URL, {cache:'no-store'});
@@ -337,8 +206,6 @@ async function loadWeather(){
     document.getElementById('hiLow').textContent = `${Math.round(d.daily.temperature_2m_max[0])}° / ${Math.round(d.daily.temperature_2m_min[0])}°`;
     document.getElementById('wind').textContent = `${Math.round(c.wind_speed_10m)} mph`;
     document.getElementById('rain').textContent = `${d.daily.precipitation_probability_max[0] ?? 0}%`;
-    document.getElementById('feelsLike').textContent = `${Math.round(c.apparent_temperature)}°`;
-    document.getElementById('updated').textContent = fmtTime(new Date().toISOString());
     const f = document.getElementById('forecast');
     f.innerHTML = '';
     for(let i=0;i<3;i++){
@@ -348,14 +215,23 @@ async function loadWeather(){
     document.getElementById('condition').innerHTML = '<span class="error">Weather unavailable. Check internet connection.</span>';
   }
 }
+
 async function loadWaterTemp(){
+  const el = document.getElementById('waterTemp');
   try {
-    const r = await fetch(WATER_TEMP_URL, {cache:'no-store'});
+    const r = await fetch(MARINE_URL, {cache:'no-store'});
     const d = await r.json();
-    const latest = d.data && d.data[0] && d.data[0].v;
-    document.getElementById('waterTemp').textContent = latest ? `${Math.round(Number(latest))}°` : '--°';
+    const series = d && d.hourly && d.hourly.sea_surface_temperature;
+    if (!series || !series.length || series[0] === null || series[0] === undefined) {
+      el.textContent = '--°';
+      return;
+    }
+    el.textContent = Math.round(series[0]) + '°';
   } catch(e){
-    document.getElementById('waterTemp').textContent = '--°';
+    // Marine data can be unavailable for some near-shore points, or
+    // the request can fail independently of the main weather call -
+    // fail gracefully without breaking the rest of the dashboard.
+    el.textContent = '--°';
   }
 }
 
@@ -381,19 +257,32 @@ async function loadTides(){
     document.getElementById('tides').innerHTML = '<div class="error">Tides unavailable. Check internet connection.</div>';
   }
 }
-async function refreshAll(){ setTodayText(); await loadWeather(); await loadWaterTemp(); await loadTides(); }
 
-function reloadSlides(){
-  const frame = document.getElementById('slidesFrame');
-  if (!frame) return;
-  const base = frame.src.split('&refresh=')[0];
-  frame.src = base + '&refresh=' + Date.now();
+async function refreshAll(){
+  await loadWeather();
+  await loadWaterTemp();
+  await loadTides();
+}
+
+function updateDate(){
+  const el = document.getElementById('liveDate');
+  if (!el) return;
+  const now = new Date();
+  // Matches the reference header format: "Sunday, June 21" (weekday,
+  // month, day - no year, since the TV display is always "today").
+  el.textContent = now.toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric',
+  });
 }
 
 refreshAll();
-setInterval(refreshAll, 15*60*1000);       // weather/tides/water temp
-setInterval(reloadSlides, 30*60*1000);     // Google Slides published deck
-setTimeout(() => window.location.reload(), 4*60*60*1000); // full browser refresh every 4 hours
+setInterval(refreshAll, 15*60*1000);
+
+updateDate();
+// Checked once a minute (not once a day) so the date rolls over
+// correctly if the TV is left running overnight past midnight,
+// without needing a full page reload to catch it.
+setInterval(updateDate, 60*1000);
 </script>
 </body>
 </html>
