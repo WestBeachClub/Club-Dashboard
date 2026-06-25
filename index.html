@@ -68,19 +68,22 @@
       display: grid;
       /* Exact height budget, top to bottom: brand label, weather
          card, tides card, forecast card, with gaps between each.
-         Weather is sized "auto" - it only takes the height its
-         content actually needs (temp + metrics grid), so it never
-         reserves dead space below itself. Tides and Forecast split
-         ALL the remaining height as fr units, so on a short laptop
-         screen they shrink together to fit instead of overflowing
-         and getting clipped by overflow:hidden, which is what was
-         cutting off the 3-day forecast card before. */
-      grid-template-rows: auto auto 1fr 1fr;
+         ALL THREE cards are sized "auto" - each one only takes the
+         height its own content actually needs, so a card's text
+         size and its box size can never disagree with each other.
+         This is what prevents both failure modes seen before: dead
+         space below a card (box bigger than content) and text
+         overlapping past its row (content bigger than box). */
+      grid-template-rows: auto auto auto auto;
       gap: 1.2vh;
       overflow: hidden;
       min-height: 0;
     }
-    .panel > * { min-height: 0; overflow: hidden; }
+    /* No min-height:0/overflow:hidden here anymore - each card sizes
+       to its own content now, so there's nothing that legitimately
+       needs clipping. Keeping this hidden would only risk silently
+       cutting off text again if a measurement is ever slightly off,
+       instead of the overflow being visible and easy to spot. */
 
     .brand { text-align:center; border-bottom:0.1vh solid var(--line); padding-bottom:1.4vh; }
     .brand .sub { font-size:1.2vw; color:var(--muted); text-transform:uppercase; letter-spacing:0.15vw; font-weight:700; }
@@ -90,20 +93,19 @@
       border-radius:1.4vw; padding:1.2vh 1.4vw;
       box-shadow:0 0.2vh 1vh rgba(11,47,79,.08);
       display: flex; flex-direction: column;
-      min-height: 0; overflow: hidden;
     }
     .card h2 {
       margin:0 0 0.6vh 0; font-size: min(1.45vw, 2.2vh);
       letter-spacing:0.04vw; text-transform:uppercase;
       flex-shrink: 0;
     }
-    /* Wraps everything in a card below the h2 so it can flex to fill
-       the card's remaining height - this is what lets tide rows and
-       forecast columns shrink together to fit a short screen instead
-       of overflowing past a fixed size. */
+    /* Each card now sizes to its own content (see grid-template-rows
+       above), so card-body just stacks naturally - it no longer
+       needs to flex-grow to fill a taller-than-content box, which is
+       what let tide rows get squeezed thinner than their text and
+       overlap. */
     .card-body {
-      flex: 1; min-height: 0; display: flex; flex-direction: column;
-      overflow: hidden;
+      display: flex; flex-direction: column;
     }
 
     #weatherCard .card-body {
@@ -123,7 +125,7 @@
     .tide-row {
       display:flex; justify-content:space-between; align-items:center;
       border-top:0.1vh solid var(--line); font-size: min(1.45vw, 2.1vh);
-      flex: 1; min-height: 0;
+      padding: 0.5vh 0;
     }
     .tide-row:first-of-type { border-top:0; }
     .tide-type { font-weight:800; }
@@ -131,11 +133,10 @@
 
     .forecast {
       display:grid; grid-template-columns:repeat(3,1fr); gap:0.6vw;
-      flex: 1; min-height: 0; overflow: hidden;
     }
     .day {
       background:#f4f8fb; border-radius:0.9vw; padding:0.6vh 0.4vw; text-align:center;
-      display: flex; flex-direction: column; justify-content: center; min-height: 0;
+      display: flex; flex-direction: column; justify-content: center;
     }
     .day-name { font-size: min(0.95vw, 1.4vh); text-transform:uppercase; color:var(--muted); letter-spacing:0.04vw; }
     .day-icon { font-size: min(2.2vw, 3.2vh); margin:0.3vh 0; }
