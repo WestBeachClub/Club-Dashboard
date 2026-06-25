@@ -124,7 +124,7 @@
 
     .tide-row {
       display:flex; justify-content:space-between; align-items:center;
-      border-top:0.1vh solid var(--line); font-size: min(1.45vw, 2.1vh);
+      border-top:0.1vh solid var(--line); font-size: 1.45vw;
       padding: 0.5vh 0;
     }
     .tide-row:first-of-type { border-top:0; }
@@ -138,31 +138,40 @@
       background:#f4f8fb; border-radius:0.9vw; padding:0.6vh 0.4vw; text-align:center;
       display: flex; flex-direction: column; justify-content: center;
     }
-    .day-name { font-size: min(0.95vw, 1.4vh); text-transform:uppercase; color:var(--muted); letter-spacing:0.04vw; }
-    .day-icon { font-size: min(2.2vw, 3.2vh); margin:0.3vh 0; }
-    .day-temp { font-size: min(1.35vw, 2vh); font-weight:800; }
+    .day-name { font-size: 0.95vw; text-transform:uppercase; color:var(--muted); letter-spacing:0.04vw; }
+    .day-icon { font-size: 2.2vw; margin:0.3vh 0; }
+    .day-temp { font-size: 1.35vw; font-weight:800; }
 
-    /* Tides and forecast cards now get most of the panel's height
-       (Weather shrinks to its own content size above), so their text
-       is sized up accordingly - close to the Weather card's own
-       scale, since these cards are no longer cramped. */
+    /* Tides and forecast text is sized purely off vw (panel width),
+       NOT vh. This is the key fix: the panel's width is always a
+       fixed 28% of screen width no matter what shape the screen is
+       (16:9 TV, square laptop window, anything), and each card's
+       height auto-sizes to fit whatever its text needs (see
+       grid-template-rows: auto above). With only ONE measurement
+       (vw) driving both the text size and, indirectly, the box
+       height, text and box can never disagree with each other -
+       there's nothing left to fall out of sync. Previously these
+       used min(vw, vh), and on a screen that wasn't wide 16:9 (like
+       a square laptop window) the vh half of that calculation could
+       force text far smaller or larger than the vw-sized box
+       expected, which is what caused the rows to overlap. */
     #tidesCard h2, #forecastCard h2 {
-      font-size: min(1.7vw, 3vh); margin-bottom: 0.8vh;
+      font-size: 1.7vw; margin-bottom: 0.8vh;
     }
     #tidesCard .tide-row {
-      font-size: min(2.1vw, 3.8vh);
+      font-size: 2.1vw;
     }
     #forecastCard .day {
       padding: 1vh 0.5vw;
     }
     #forecastCard .day-name {
-      font-size: min(1.3vw, 2.3vh);
+      font-size: 1.3vw;
     }
     #forecastCard .day-icon {
-      font-size: min(3.2vw, 5.5vh); margin: 0.5vh 0;
+      font-size: 3.2vw; margin: 0.5vh 0;
     }
     #forecastCard .day-temp {
-      font-size: min(1.7vw, 3vh);
+      font-size: 1.7vw;
     }
     #tidesCard, #forecastCard {
       padding: 1.6vh 1.6vw;
@@ -171,15 +180,24 @@
     .error { color:#9f1e1e; font-weight:700; font-size:1vw; line-height:1.35; }
 
     /*
-      Fallback for unusually narrow/tall windows (e.g. a portrait
-      monitor used for testing on a laptop instead of the TV): clamp
-      font sizes so text never becomes illegibly small or grotesquely
-      huge outside the 16:9 TV context this was designed for.
+      Safety net for screens that AREN'T wide 16:9 (square laptop
+      windows, portrait monitors, etc). The vw-only sizing above is
+      what fixes the text/box mismatch on any screen shape, but vw
+      alone has no awareness of vertical space - on a screen that's
+      square or taller, vw-sized text can still end up taller than
+      the screen has room for. This re-introduces a vh ceiling, but
+      only as a backstop on non-widescreen shapes, not as a
+      competing measurement on the normal 16:9 TV case.
     */
-    @media (max-aspect-ratio: 4/5) {
+    @media (max-aspect-ratio: 4/3) {
       .panel { padding: 2vh 2.4vw; }
-      .temp { font-size: 9vw; }
-      .icon { font-size: 8vw; }
+      .temp { font-size: 7vh; }
+      .icon { font-size: 6.5vh; }
+      #tidesCard .tide-row { font-size: 2.6vh; }
+      #tidesCard h2, #forecastCard h2 { font-size: 2vh; }
+      #forecastCard .day-name { font-size: 1.5vh; }
+      #forecastCard .day-icon { font-size: 3.5vh; }
+      #forecastCard .day-temp { font-size: 2vh; }
     }
   </style>
 </head>
@@ -329,42 +347,6 @@ async function refreshAll(){
   await loadWeather();
   await loadWaterTemp();
   await loadTides();
-  runDiagnostics_();
-}
-
-// DIAGNOSTIC ONLY - prints viewport info and actual measured tide-row
-// positions directly onto the page, so this can be read off the TV
-// itself without needing DevTools access.
-function runDiagnostics_(){
-  let box = document.getElementById('diagBox');
-  if (!box) {
-    box = document.createElement('div');
-    box.id = 'diagBox';
-    box.style.position = 'fixed';
-    box.style.bottom = '0';
-    box.style.left = '0';
-    box.style.background = 'rgba(0,0,0,0.85)';
-    box.style.color = '#0f0';
-    box.style.fontFamily = 'monospace';
-    box.style.fontSize = '14px';
-    box.style.padding = '8px';
-    box.style.zIndex = '99999';
-    box.style.whiteSpace = 'pre';
-    document.body.appendChild(box);
-  }
-  const lines = [];
-  lines.push(`viewport: ${window.innerWidth} x ${window.innerHeight}  dpr: ${window.devicePixelRatio}`);
-  const rows = document.querySelectorAll('.tide-row');
-  rows.forEach((el, i) => {
-    const r = el.getBoundingClientRect();
-    lines.push(`row${i}: top=${r.top.toFixed(0)} bottom=${r.bottom.toFixed(0)} h=${r.height.toFixed(0)}`);
-  });
-  const tidesCard = document.getElementById('tidesCard');
-  if (tidesCard) {
-    const r = tidesCard.getBoundingClientRect();
-    lines.push(`tidesCard: top=${r.top.toFixed(0)} bottom=${r.bottom.toFixed(0)} h=${r.height.toFixed(0)}`);
-  }
-  box.textContent = lines.join('\n');
 }
 
 function updateDate(){
