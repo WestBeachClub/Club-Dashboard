@@ -329,6 +329,42 @@ async function refreshAll(){
   await loadWeather();
   await loadWaterTemp();
   await loadTides();
+  runDiagnostics_();
+}
+
+// DIAGNOSTIC ONLY - prints viewport info and actual measured tide-row
+// positions directly onto the page, so this can be read off the TV
+// itself without needing DevTools access.
+function runDiagnostics_(){
+  let box = document.getElementById('diagBox');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'diagBox';
+    box.style.position = 'fixed';
+    box.style.bottom = '0';
+    box.style.left = '0';
+    box.style.background = 'rgba(0,0,0,0.85)';
+    box.style.color = '#0f0';
+    box.style.fontFamily = 'monospace';
+    box.style.fontSize = '14px';
+    box.style.padding = '8px';
+    box.style.zIndex = '99999';
+    box.style.whiteSpace = 'pre';
+    document.body.appendChild(box);
+  }
+  const lines = [];
+  lines.push(`viewport: ${window.innerWidth} x ${window.innerHeight}  dpr: ${window.devicePixelRatio}`);
+  const rows = document.querySelectorAll('.tide-row');
+  rows.forEach((el, i) => {
+    const r = el.getBoundingClientRect();
+    lines.push(`row${i}: top=${r.top.toFixed(0)} bottom=${r.bottom.toFixed(0)} h=${r.height.toFixed(0)}`);
+  });
+  const tidesCard = document.getElementById('tidesCard');
+  if (tidesCard) {
+    const r = tidesCard.getBoundingClientRect();
+    lines.push(`tidesCard: top=${r.top.toFixed(0)} bottom=${r.bottom.toFixed(0)} h=${r.height.toFixed(0)}`);
+  }
+  box.textContent = lines.join('\n');
 }
 
 function updateDate(){
