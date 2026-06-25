@@ -68,13 +68,14 @@
       display: grid;
       /* Exact height budget, top to bottom: brand label, weather
          card, tides card, forecast card, with gaps between each.
-         These fractions are sized in `fr` units relative to each
-         other and ALWAYS sum to fill exactly 100% of the panel's
-         height - so on a short laptop screen the cards shrink
-         together instead of overflowing and getting clipped by
-         overflow:hidden, which is what was cutting off the 3-day
-         forecast card before. */
-      grid-template-rows: auto 2.1fr 2.0fr 1.9fr;
+         Weather is sized "auto" - it only takes the height its
+         content actually needs (temp + metrics grid), so it never
+         reserves dead space below itself. Tides and Forecast split
+         ALL the remaining height as fr units, so on a short laptop
+         screen they shrink together to fit instead of overflowing
+         and getting clipped by overflow:hidden, which is what was
+         cutting off the 3-day forecast card before. */
+      grid-template-rows: auto auto 1fr 1fr;
       gap: 1.2vh;
       overflow: hidden;
       min-height: 0;
@@ -103,6 +104,10 @@
     .card-body {
       flex: 1; min-height: 0; display: flex; flex-direction: column;
       overflow: hidden;
+    }
+
+    #weatherCard {
+      align-self: start;
     }
 
     .weather-main { display:flex; align-items:center; justify-content:space-between; gap:0.8vw; flex-shrink: 0; }
@@ -136,31 +141,30 @@
     .day-icon { font-size: min(2.2vw, 3.2vh); margin:0.3vh 0; }
     .day-temp { font-size: min(1.35vw, 2vh); font-weight:800; }
 
-    /* Tides and forecast text sized up from their previous tiny caps
-       so they're legible from across the room, while staying a notch
-       below the Weather card's scale since these rows/columns have
-       less width per element (4 tide rows stacked; 3 forecast
-       columns side by side). */
+    /* Tides and forecast cards now get most of the panel's height
+       (Weather shrinks to its own content size above), so their text
+       is sized up accordingly - close to the Weather card's own
+       scale, since these cards are no longer cramped. */
     #tidesCard h2, #forecastCard h2 {
-      font-size: min(1.3vw, 1.9vh); margin-bottom: 0.4vh;
+      font-size: min(1.7vw, 3vh); margin-bottom: 0.8vh;
     }
     #tidesCard .tide-row {
-      font-size: min(1.3vw, 1.85vh);
+      font-size: min(2.1vw, 3.8vh);
     }
     #forecastCard .day {
-      padding: 0.5vh 0.3vw;
+      padding: 1vh 0.5vw;
     }
     #forecastCard .day-name {
-      font-size: min(0.85vw, 1.25vh);
+      font-size: min(1.3vw, 2.3vh);
     }
     #forecastCard .day-icon {
-      font-size: min(1.9vw, 2.7vh); margin: 0.25vh 0;
+      font-size: min(3.2vw, 5.5vh); margin: 0.5vh 0;
     }
     #forecastCard .day-temp {
-      font-size: min(1.15vw, 1.7vh);
+      font-size: min(1.7vw, 3vh);
     }
     #tidesCard, #forecastCard {
-      padding: 1vh 1.2vw;
+      padding: 1.6vh 1.6vw;
     }
 
     .error { color:#9f1e1e; font-weight:700; font-size:1vw; line-height:1.35; }
